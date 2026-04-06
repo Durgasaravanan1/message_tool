@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from 'react';
 import {
   Users,
@@ -14,6 +16,8 @@ import {
   Workflow,
   Bot,
   Wallet,
+  Inbox,
+  PlusCircle,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -77,13 +81,13 @@ const kpiData = [
     bgColor: 'bg-pink-100 dark:bg-pink-900/20',
   },
   {
-    label: 'Revenue',
-    value: '$84,250',
-    change: '+28.4%',
+    label: 'Email Messages Sent',
+    value: '89,432',
+    change: '+22.7%',
     trend: 'up',
-    icon: DollarSign,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-900/20',
+    icon: Mail,
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-100 dark:bg-indigo-900/20',
   },
 ];
 
@@ -188,13 +192,11 @@ export default function Dashboard() {
   const [walletBalance, setWalletBalance] = useState(0);
 
   useEffect(() => {
-    // Load wallet balance from localStorage
     const balance = localStorage.getItem('wallet_balance');
     if (balance) {
       setWalletBalance(parseFloat(balance));
     }
 
-    // Listen for storage changes (if balance updated from another tab)
     const handleStorageChange = (e) => {
       if (e.key === 'wallet_balance') {
         setWalletBalance(parseFloat(e.newValue) || 0);
@@ -203,7 +205,6 @@ export default function Dashboard() {
 
     window.addEventListener('storage', handleStorageChange);
     
-    // Also check for updates in the same window (custom event)
     const handleWalletUpdate = (event) => {
       if (event.detail && event.detail.balance !== undefined) {
         setWalletBalance(event.detail.balance);
@@ -218,32 +219,16 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleUploadContacts = () => {
-    console.log('Navigating to upload contacts page');
-  };
-
-  const handleCreateCampaign = () => {
-    console.log('Navigating to create campaign page');
-  };
-
-  const handleSetupFlow = () => {
-    console.log('Navigating to setup flow page');
-  };
-
-  const handleSetupChatbot = () => {
-    console.log('Navigating to setup chatbot page');
-  };
-
-  const handleKpiClick = (kpiLabel) => {
-    console.log(`KPI clicked: ${kpiLabel}`);
-  };
-
-  const handleChartInteraction = (chartName, data) => {
-    console.log(`Chart interaction on ${chartName}:`, data);
+  const handleGetCredits = () => {
+    // Set flag for credit purchase mode (will show plan selection with edit controls)
+    localStorage.setItem('checkoutMode', 'credit_purchase');
+    localStorage.removeItem('selectedPlan');
+    navigate('/wallet/checkout');
   };
 
   const handleWalletClick = () => {
-    navigate('/wallet/checkout');
+    // Go to billing page to select plan first
+    navigate('/billing');
   };
 
   return (
@@ -255,7 +240,16 @@ export default function Dashboard() {
           <p className="text-sm lg:text-base text-gray-500 dark:text-gray-400 mt-1">Welcome back! Here's what's happening today.</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Wallet Button with Amount */}
+          {/* Get Credits Button - Opens checkout with plan selection + edit controls */}
+          <button
+            onClick={handleGetCredits}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:shadow-lg transition-all w-full sm:w-auto group"
+          >
+            <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+            <span className="text-sm font-medium">Get Credits</span>
+          </button>
+
+          {/* Wallet Button - Goes to Billing page to select plans (no edit controls on checkout) */}
           <button
             onClick={handleWalletClick}
             className="flex items-center gap-3 px-4 py-2 border-2 border-green-500 dark:border-green-400 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-all w-full sm:w-auto group"
@@ -275,7 +269,6 @@ export default function Dashboard() {
           
           <Link
             to="/contacts/upload"
-            onClick={handleUploadContacts}
             className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors w-full sm:w-auto"
           >
             <Users className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -284,7 +277,6 @@ export default function Dashboard() {
           
           <Link
             to="/campaigns/create"
-            onClick={handleCreateCampaign}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm w-full sm:w-auto"
           >
             <Send className="w-4 h-4" />
@@ -300,7 +292,6 @@ export default function Dashboard() {
           return (
             <div
               key={kpi.label}
-              onClick={() => handleKpiClick(kpi.label)}
               className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 hover:shadow-lg transition-all cursor-pointer"
             >
               <div className="flex items-start justify-between mb-3">
@@ -323,7 +314,6 @@ export default function Dashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Daily Messages Chart */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 lg:p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Messages Sent</h3>
           <ResponsiveContainer width="100%" height={280}>
@@ -351,10 +341,6 @@ export default function Dashboard() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                 }}
-                formatter={(value, name) => {
-                  console.log(`Tooltip hover on ${name}:`, value);
-                  return [value, name];
-                }}
               />
               <Area type="monotone" dataKey="sent" stroke="#6366f1" fillOpacity={1} fill="url(#colorSent)" />
               <Area type="monotone" dataKey="delivered" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorDelivered)" />
@@ -363,7 +349,6 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Reply Rate Chart */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 lg:p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reply Rate (%)</h3>
           <ResponsiveContainer width="100%" height={280}>
@@ -377,10 +362,6 @@ export default function Dashboard() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                 }}
-                formatter={(value, name) => {
-                  console.log(`Reply rate tooltip: ${value}%`);
-                  return [value + '%', name];
-                }}
               />
               <Bar dataKey="rate" fill="#6366f1" radius={[8, 8, 0, 0]} />
             </BarChart>
@@ -390,7 +371,6 @@ export default function Dashboard() {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Email Opens Chart */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 lg:p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Email Open Rate</h3>
           <ResponsiveContainer width="100%" height={200}>
@@ -404,17 +384,12 @@ export default function Dashboard() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px',
                 }}
-                formatter={(value, name) => {
-                  console.log(`Email opens tooltip: ${value} opens`);
-                  return [value, name];
-                }}
               />
               <Line type="monotone" dataKey="opens" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b', r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* AI Insights */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 lg:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Zap className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -427,7 +402,6 @@ export default function Dashboard() {
                 <div 
                   key={index} 
                   className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
-                  onClick={() => console.log('AI Insight clicked:', insight.title)}
                 >
                   <Icon className={`w-5 h-5 ${insight.color} flex-shrink-0 mt-0.5`} />
                   <div>
@@ -440,7 +414,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Live Activity Feed */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 lg:p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Live Activity</h3>
           <div className="space-y-3 max-h-[200px] overflow-y-auto">
@@ -450,7 +423,6 @@ export default function Dashboard() {
                 <div 
                   key={index} 
                   className="flex items-start gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
-                  onClick={() => console.log('Activity clicked:', activity.message)}
                 >
                   <div className={`w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0`}>
                     <Icon className={`w-4 h-4 ${activity.color}`} />
@@ -472,7 +444,6 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             to="/campaigns/create"
-            onClick={handleCreateCampaign}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:shadow-lg transition-all"
           >
             <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
@@ -486,7 +457,6 @@ export default function Dashboard() {
 
           <Link
             to="/contacts/upload"
-            onClick={handleUploadContacts}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:shadow-lg transition-all"
           >
             <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
@@ -500,7 +470,6 @@ export default function Dashboard() {
 
           <Link
             to="/whatsapp/flows/create"
-            onClick={handleSetupFlow}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:shadow-lg transition-all"
           >
             <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
@@ -514,7 +483,6 @@ export default function Dashboard() {
 
           <Link
             to="/chatbot"
-            onClick={handleSetupChatbot}
             className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg hover:shadow-lg transition-all"
           >
             <div className="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">

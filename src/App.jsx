@@ -409,6 +409,7 @@ import SuperAdminLayout from "../src/components/layouts/SuperAdminLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import WalletCheckout from "./components/pages/WalletCheckout";
+import Billing from "./components/pages/Billing";
 
 // Loading Component
 const PageLoader = () => (
@@ -780,6 +781,15 @@ const router = createBrowserRouter([
       </LazyRoute>
     ),
   },
+   {
+   path:"/billing" ,
+    element: (
+      <LazyRoute>
+        <Billing/>
+      </LazyRoute>
+    ),
+  },
+
   {
     path: "/mech-bootcamp-checkout",
     element: (

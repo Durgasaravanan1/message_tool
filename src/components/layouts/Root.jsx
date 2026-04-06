@@ -18,15 +18,24 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Moon,
   Sun,
   Command,
   Menu,
   X,
   LogOut,
-  ChevronDown,
   Shield,
   Building2,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  XCircle,
+  Clock,
+  Mail as MailIcon,
+  UserPlus,
+  TrendingUp,
 } from 'lucide-react';
 
 const navigationItems = [
@@ -50,7 +59,8 @@ export default function Root() {
   const [darkMode, setDarkMode] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const location = useLocation();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [visibleNotificationsCount, setVisibleNotificationsCount] = useState(3);
 
   const toggleTheme = () => {
     console.log('Toggling theme, current dark mode:', darkMode);
@@ -76,13 +86,105 @@ export default function Root() {
 
   const handleSearch = (searchTerm) => {
     console.log('Searching for:', searchTerm);
-    // Implement search logic here
   };
 
-  console.log('Current route:', location.pathname);
-  console.log('User authenticated:', !!user);
-  console.log('Super admin status:', isSuperAdmin);
-  console.log('Selected client:', selectedClient);
+  const allNotifications = [
+    {
+      id: 1,
+      title: 'Campaign Completed',
+      message: 'Spring Sale sent to 3,200 contacts',
+      time: '5m ago',
+      read: false,
+      type: 'success',
+      icon: CheckCircle,
+    },
+    {
+      id: 2,
+      title: 'New Lead',
+      message: 'Sarah Johnson - Score: 95',
+      time: '15m ago',
+      read: false,
+      type: 'info',
+      icon: UserPlus,
+    },
+    {
+      id: 3,
+      title: 'Template Approved',
+      message: 'Product Launch template approved',
+      time: '1h ago',
+      read: true,
+      type: 'success',
+      icon: CheckCircle,
+    },
+    {
+      id: 4,
+      title: 'High Engagement',
+      message: '32% above average this week',
+      time: '2h ago',
+      read: true,
+      type: 'trending',
+      icon: TrendingUp,
+    },
+    {
+      id: 5,
+      title: 'Integration Connected',
+      message: 'Slack connected successfully',
+      time: '3h ago',
+      read: true,
+      type: 'info',
+      icon: Info,
+    },
+    {
+      id: 6,
+      title: 'System Update',
+      message: 'AI personalization available',
+      time: '1d ago',
+      read: true,
+      type: 'info',
+      icon: Info,
+    },
+  ];
+
+  const visibleNotifications = allNotifications.slice(0, visibleNotificationsCount);
+  const hasMoreNotifications = visibleNotificationsCount < allNotifications.length;
+  const unreadCount = allNotifications.filter(n => !n.read).length;
+
+  const handleViewMore = () => {
+    setVisibleNotificationsCount(prev => Math.min(prev + 3, allNotifications.length));
+  };
+
+  const handleViewLess = () => {
+    setVisibleNotificationsCount(3);
+  };
+
+  const getNotificationStyles = (type) => {
+    switch (type) {
+      case 'success':
+        return {
+          bg: 'bg-green-50 dark:bg-green-900/20',
+          iconBg: 'bg-green-100 dark:bg-green-900/40',
+          iconColor: 'text-green-600 dark:text-green-400',
+        };
+      case 'info':
+        return {
+          bg: 'bg-blue-50 dark:bg-blue-900/20',
+          iconBg: 'bg-blue-100 dark:bg-blue-900/40',
+          iconColor: 'text-blue-600 dark:text-blue-400',
+        };
+      case 'trending':
+        return {
+          bg: 'bg-purple-50 dark:bg-purple-900/20',
+          iconBg: 'bg-purple-100 dark:bg-purple-900/40',
+          iconColor: 'text-purple-600 dark:text-purple-400',
+        };
+      default:
+        return {
+          bg: 'bg-gray-50 dark:bg-gray-800',
+          iconBg: 'bg-gray-100 dark:bg-gray-700',
+          iconColor: 'text-gray-600 dark:text-gray-400',
+        };
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
@@ -90,10 +192,7 @@ export default function Root() {
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => {
-            console.log('Closing mobile menu');
-            setMobileMenuOpen(false);
-          }}
+          onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
@@ -119,11 +218,7 @@ export default function Root() {
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
           )}
-          <button
-            className="lg:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Close menu"
-          >
+          <button className="lg:hidden" onClick={() => setMobileMenuOpen(false)}>
             <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
@@ -139,10 +234,7 @@ export default function Root() {
                 <Link
                   key={item.id}
                   to={item.path}
-                  onClick={() => {
-                    console.log(`Navigating to: ${item.path}`);
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-sm'
@@ -160,10 +252,7 @@ export default function Root() {
         {/* Collapse Button */}
         <div className="p-3 border-t border-gray-200 dark:border-gray-700 hidden lg:block">
           <button
-            onClick={() => {
-              console.log('Toggling sidebar collapse, current state:', sidebarCollapsed);
-              setSidebarCollapsed(!sidebarCollapsed);
-            }}
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
@@ -180,11 +269,7 @@ export default function Root() {
           <div className="flex items-center gap-4 flex-1 max-w-2xl">
             <button
               className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-              onClick={() => {
-                console.log('Opening mobile menu');
-                setMobileMenuOpen(true);
-              }}
-              aria-label="Open menu"
+              onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
@@ -193,16 +278,10 @@ export default function Root() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
-                placeholder="Search or type a command..."
+                placeholder="Search..."
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded flex items-center">
-                  <Command className="w-3 h-3" />
-                </kbd>
-                <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">K</kbd>
-              </div>
             </div>
           </div>
 
@@ -212,7 +291,7 @@ export default function Root() {
             {isSuperAdmin && selectedClient && (
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                 <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs text-blue-600 dark:text-blue-400">Viewing: {selectedClient.name}</span>
+                <span className="text-xs text-blue-600 dark:text-blue-400">{selectedClient.name}</span>
               </div>
             )}
 
@@ -220,77 +299,181 @@ export default function Root() {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Toggle theme"
             >
               {darkMode ? <Sun className="w-5 h-5 text-gray-700 dark:text-gray-300" /> : <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />}
             </button>
 
-            {/* Notifications */}
-            <button 
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              onClick={() => console.log('Notifications clicked')}
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
-            </button>
+            {/* Notifications - Compact Version */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowUserMenu(false);
+                }}
+                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Compact Notifications Dropdown */}
+              {showNotifications && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
+                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-white" />
+                        <h3 className="text-xs font-semibold text-white">Notifications</h3>
+                        <span className="px-1.5 py-0.5 bg-white/20 rounded-full text-[10px] text-white">
+                          {allNotifications.length}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => console.log('Mark all as read')}
+                        className="text-[10px] text-white/90 hover:text-white hover:underline"
+                      >
+                        Mark all read
+                      </button>
+                    </div>
+
+                    {/* Notifications List - Compact */}
+                    <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                      {visibleNotifications.map((notification) => {
+                        const Icon = notification.icon;
+                        const styles = getNotificationStyles(notification.type);
+                        
+                        return (
+                          <div
+                            key={notification.id}
+                            onClick={() => {
+                              console.log('Notification clicked:', notification.id);
+                              setShowNotifications(false);
+                            }}
+                            className={`px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all ${
+                              !notification.read ? styles.bg : ''
+                            } ${!notification.read ? 'border-l-3 border-l-blue-500' : ''}`}
+                          >
+                            <div className="flex gap-2">
+                              {/* Small Icon */}
+                              <div className={`flex-shrink-0 w-7 h-7 rounded-lg ${styles.iconBg} flex items-center justify-center`}>
+                                <Icon className={`w-3.5 h-3.5 ${styles.iconColor}`} />
+                              </div>
+                              
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-1">
+                                  <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                                    {notification.title}
+                                  </p>
+                                  {!notification.read && (
+                                    <span className="flex-shrink-0 w-1.5 h-1.5 mt-1 bg-blue-500 rounded-full"></span>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-1">
+                                  {notification.message}
+                                </p>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Clock className="w-2.5 h-2.5 text-gray-400" />
+                                  <p className="text-[10px] text-gray-400">{notification.time}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* View More/Less - Compact */}
+                    {hasMoreNotifications && (
+                      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+                        <button 
+                          onClick={handleViewMore}
+                          className="w-full text-center text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 py-1.5 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <span>View More</span>
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    {visibleNotificationsCount > 3 && (
+                      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+                        <button 
+                          onClick={handleViewLess}
+                          className="w-full text-center text-[11px] font-medium text-gray-600 dark:text-gray-400 hover:text-gray-700 py-1.5 transition-colors flex items-center justify-center gap-1"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                          <span>Show Less</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Footer - Compact */}
+                    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+                      <button 
+                        onClick={() => {
+                          navigate('/notifications');
+                          setShowNotifications(false);
+                        }}
+                        className="w-full text-center text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 py-1.5 transition-colors"
+                      >
+                        View all →
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* User Profile */}
             <div className="relative">
               <button 
                 onClick={() => {
-                  console.log('Toggling user menu');
                   setShowUserMenu(!showUserMenu);
+                  setShowNotifications(false);
                 }}
                 className="hidden sm:flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                aria-label="User menu"
               >
                 <img
                   src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'}
                   alt={user?.name || 'User avatar'}
-                  className="w-8 h-8 rounded-full"
+                  className="w-7 h-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-600"
                 />
-                <span className="text-sm text-gray-900 dark:text-white">{user?.name || 'User'}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'User'}</span>
                 <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
 
               {/* Mobile User Profile */}
               <button 
                 onClick={() => {
-                  console.log('Toggling user menu (mobile)');
                   setShowUserMenu(!showUserMenu);
+                  setShowNotifications(false);
                 }}
                 className="sm:hidden p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                aria-label="User menu"
               >
                 <img
                   src={user?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=user'}
                   alt={user?.name || 'User avatar'}
-                  className="w-8 h-8 rounded-full"
+                  className="w-7 h-7 rounded-full ring-2 ring-gray-200 dark:ring-gray-600"
                 />
               </button>
 
               {/* User Dropdown */}
               {showUserMenu && (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => {
-                      console.log('Closing user menu');
-                      setShowUserMenu(false);
-                    }}
-                  />
-                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20 py-2">
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                  <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20 py-1">
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'User'}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{user?.email || 'user@example.com'}</div>
-                      {user?.role && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Role: <span className="text-blue-600 dark:text-blue-400">{user.role === 'superadmin' ? 'Super Admin' : 'Admin'}</span>
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{user?.email || 'user@example.com'}</div>
                       {selectedClient && (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                           Client: <span className="text-gray-900 dark:text-white">{selectedClient.name}</span>
                         </div>
                       )}
@@ -304,12 +487,11 @@ export default function Root() {
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <Shield className="w-4 h-4" />
-                        Super Admin Dashboard
+                        Super Admin
                       </button>
                     )}
                     <button
                       onClick={() => {
-                        console.log('Navigating to settings');
                         navigate('/settings');
                         setShowUserMenu(false);
                       }}

@@ -14,6 +14,11 @@ import {
   Mail,
   Phone,
   Check,
+  X,
+  Send,
+  Clock,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 const mockContacts = [
@@ -25,6 +30,11 @@ const mockContacts = [
     tags: ['VIP', 'Hot Lead'],
     status: 'Replied',
     lastActivity: '2 hours ago',
+    messageHistory: [
+      { type: 'whatsapp', status: 'delivered', time: '2 hours ago', content: 'Hi Sarah, thanks for your interest!' },
+      { type: 'email', status: 'opened', time: '3 hours ago', content: 'Welcome to our newsletter!' },
+      { type: 'whatsapp', status: 'sent', time: '1 day ago', content: 'Special offer just for you!' },
+    ],
   },
   {
     id: 2,
@@ -34,6 +44,10 @@ const mockContacts = [
     tags: ['Customer'],
     status: 'Opened',
     lastActivity: '5 hours ago',
+    messageHistory: [
+      { type: 'email', status: 'opened', time: '5 hours ago', content: 'Your order confirmation' },
+      { type: 'whatsapp', status: 'delivered', time: '1 day ago', content: 'Order update notification' },
+    ],
   },
   {
     id: 3,
@@ -43,6 +57,10 @@ const mockContacts = [
     tags: ['Lead', 'Interested'],
     status: 'Not Replied',
     lastActivity: '1 day ago',
+    messageHistory: [
+      { type: 'email', status: 'sent', time: '1 day ago', content: 'Welcome to our platform!' },
+      { type: 'whatsapp', status: 'sent', time: '2 days ago', content: 'Check out our new features' },
+    ],
   },
   {
     id: 4,
@@ -52,6 +70,11 @@ const mockContacts = [
     tags: ['Customer', 'VIP'],
     status: 'Replied',
     lastActivity: '3 hours ago',
+    messageHistory: [
+      { type: 'whatsapp', status: 'delivered', time: '3 hours ago', content: 'Your support ticket resolved' },
+      { type: 'email', status: 'opened', time: '4 hours ago', content: 'Monthly report available' },
+      { type: 'whatsapp', status: 'read', time: '5 hours ago', content: 'Thank you for your purchase!' },
+    ],
   },
   {
     id: 5,
@@ -61,6 +84,10 @@ const mockContacts = [
     tags: ['Lead'],
     status: 'Opened',
     lastActivity: '6 hours ago',
+    messageHistory: [
+      { type: 'email', status: 'opened', time: '6 hours ago', content: 'Special discount inside!' },
+      { type: 'whatsapp', status: 'delivered', time: '1 day ago', content: 'Limited time offer' },
+    ],
   },
 ];
 
@@ -78,6 +105,8 @@ export default function Contacts() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   const toggleSelectContact = (id) => {
     console.log('Toggling contact selection:', id);
@@ -112,6 +141,31 @@ export default function Contacts() {
     }
   };
 
+  const getMessageStatusIcon = (status) => {
+    switch (status) {
+      case 'delivered':
+        return <CheckCircle className="w-3 h-3 text-green-500" />;
+      case 'opened':
+        return <CheckCircle className="w-3 h-3 text-blue-500" />;
+      case 'read':
+        return <CheckCircle className="w-3 h-3 text-purple-500" />;
+      case 'sent':
+        return <Send className="w-3 h-3 text-gray-500" />;
+      default:
+        return <Clock className="w-3 h-3 text-gray-500" />;
+    }
+  };
+
+  const getMessageTypeIcon = (type) => {
+    return type === 'whatsapp' ? <MessageSquare className="w-4 h-4" /> : <Mail className="w-4 h-4" />;
+  };
+
+  const handleContactClick = (contact) => {
+    console.log('Opening contact details:', contact.name);
+    setSelectedContact(contact);
+    setShowMessageModal(true);
+  };
+
   const handleSearch = (query) => {
     console.log('Searching contacts for:', query);
     setSearchQuery(query);
@@ -132,6 +186,11 @@ export default function Contacts() {
 
   const handleBulkDelete = () => {
     console.log('Deleting selected contacts:', selectedContacts);
+  };
+
+  const handleSendNewMessage = (type) => {
+    console.log(`Sending new ${type} message to:`, selectedContact?.name);
+    // Implement message sending logic here
   };
 
   console.log('Contacts page rendered - filter:', selectedFilter, 'search:', searchQuery);
@@ -341,8 +400,12 @@ export default function Contacts() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {mockContacts.map((contact) => (
-                <tr key={contact.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <td className="p-4">
+                <tr 
+                  key={contact.id} 
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                  onClick={() => handleContactClick(contact)}
+                >
+                  <td className="p-4" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selectedContacts.includes(contact.id)}
@@ -386,7 +449,7 @@ export default function Contacts() {
                   <td className="p-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     {contact.lastActivity}
                   </td>
-                  <td className="p-4">
+                  <td className="p-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <button 
                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
@@ -430,6 +493,146 @@ export default function Contacts() {
           </div>
         </div>
       </div>
+
+      {/* Message Status Modal */}
+      {showMessageModal && selectedContact && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-50"
+            onClick={() => setShowMessageModal(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-lg font-medium">
+                    {selectedContact.name.split(' ').map((n) => n[0]).join('')}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {selectedContact.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {selectedContact.phone} • {selectedContact.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMessageModal(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Message History */}
+              <div className="p-4 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Message History</h4>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSendNewMessage('whatsapp')}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      New WhatsApp
+                    </button>
+                    <button
+                      onClick={() => handleSendNewMessage('email')}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                    >
+                      <Mail className="w-4 h-4" />
+                      New Email
+                    </button>
+                  </div>
+                </div>
+
+                {/* Message Timeline */}
+                <div className="space-y-3">
+                  {selectedContact.messageHistory.map((msg, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                    >
+                      <div className={`p-2 rounded-lg ${
+                        msg.type === 'whatsapp' 
+                          ? 'bg-green-100 dark:bg-green-900/20 text-green-600' 
+                          : 'bg-blue-100 dark:bg-blue-900/20 text-blue-600'
+                      }`}>
+                        {getMessageTypeIcon(msg.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                            {msg.type}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {getMessageStatusIcon(msg.status)}
+                            <span className="text-xs text-gray-500">{msg.time}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {msg.content}
+                        </p>
+                        <div className="mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            msg.status === 'delivered' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
+                            msg.status === 'opened' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' :
+                            msg.status === 'read' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400' :
+                            'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400'
+                          }`}>
+                            {msg.status.charAt(0).toUpperCase() + msg.status.slice(1)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Stats */}
+                <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Quick Stats</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">WhatsApp Messages</span>
+                        <MessageSquare className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {selectedContact.messageHistory.filter(m => m.type === 'whatsapp').length}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">Emails Sent</span>
+                        <Mail className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {selectedContact.messageHistory.filter(m => m.type === 'email').length}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Type a message..."
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

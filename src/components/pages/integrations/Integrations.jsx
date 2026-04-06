@@ -17,13 +17,13 @@ const integrationConfigs = {
       { name: 'consumerSecret', label: 'Consumer Secret', type: 'password', placeholder: 'cs_xxxxx', required: true },
     ],
   },
-  'Google Calendar': {
-    fields: [
-      { name: 'clientId', label: 'Client ID', type: 'text', placeholder: 'Enter Google OAuth Client ID', required: true },
-      { name: 'clientSecret', label: 'Client Secret', type: 'password', placeholder: 'Enter Client Secret', required: true },
-      { name: 'calendarId', label: 'Calendar ID', type: 'text', placeholder: 'primary', required: false, helpText: 'Leave empty for primary calendar' },
-    ],
-  },
+  // 'Google Calendar': {
+  //   fields: [
+  //     { name: 'clientId', label: 'Client ID', type: 'text', placeholder: 'Enter Google OAuth Client ID', required: true },
+  //     { name: 'clientSecret', label: 'Client Secret', type: 'password', placeholder: 'Enter Client Secret', required: true },
+  //     { name: 'calendarId', label: 'Calendar ID', type: 'text', placeholder: 'primary', required: false, helpText: 'Leave empty for primary calendar' },
+  //   ],
+  // },
 };
 
 const initialIntegrations = [
@@ -41,13 +41,13 @@ const initialIntegrations = [
     connected: false,
     color: 'text-purple-600',
   },
-  {
-    name: 'Google Calendar',
-    description: 'Schedule meetings',
-    icon: Calendar,
-    connected: true,
-    color: 'text-yellow-600',
-  },
+  // {
+  //   name: 'Google Calendar',
+  //   description: 'Schedule meetings',
+  //   icon: Calendar,
+  //   connected: true,
+  //   color: 'text-yellow-600',
+  // },
 ];
 
 export default function Integrations() {
